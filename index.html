@@ -1,649 +1,763 @@
-import React, { useState, useEffect } from 'react';
-import { PlusCircle, Users, BookOpen, BarChart3, Download, Star, TrendingUp, Award, Eye, Edit, Trash2, Save } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بوابة المعلمين - نظام إدارة التقييم</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-const TeacherDashboard = () => {
-  const [subjects, setSubjects] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [selectedSubject, setSelectedSubject] = useState(null);
-  const [selectedStudent, setSelectedStudent] = useState(null);
-  const [evaluations, setEvaluations] = useState([]);
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-  // Modal states
-  const [showSubjectModal, setShowSubjectModal] = useState(false);
-  const [showStudentModal, setShowStudentModal] = useState(false);
-  const [showSkillModal, setShowSkillModal] = useState(false);
-  const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
 
-  // Form states
-  const [subjectForm, setSubjectForm] = useState({ name: '', description: '', color: '#3B82F6' });
-  const [studentForm, setStudentForm] = useState({ name: '', email: '', grade: '' });
-  const [skillForm, setSkillForm] = useState({ name: '', description: '', maxScore: 100 });
-  const [evaluationForm, setEvaluationForm] = useState({ studentId: '', subjectId: '', date: '', scores: {} });
+        .header {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-  useEffect(() => {
-    // Initialize with sample data
-    const sampleSubjects = [
-      { id: 1, name: 'الرياضيات', description: 'تعليم الرياضيات الأساسية', color: '#3B82F6', skills: [
-        { id: 1, name: 'الجمع والطرح', description: 'العمليات الحسابية الأساسية', maxScore: 100 },
-        { id: 2, name: 'الضرب والقسمة', description: 'العمليات المتقدمة', maxScore: 100 }
-      ]},
-      { id: 2, name: 'اللغة العربية', description: 'تعليم القراءة والكتابة', color: '#10B981', skills: [
-        { id: 3, name: 'القراءة', description: 'مهارات القراءة والفهم', maxScore: 100 },
-        { id: 4, name: 'الكتابة', description: 'مهارات الكتابة والتعبير', maxScore: 100 }
-      ]}
-    ];
-    
-    const sampleStudents = [
-      { id: 1, name: 'أحمد محمد', email: 'ahmed@example.com', grade: 'الصف الخامس' },
-      { id: 2, name: 'فاطمة علي', email: 'fatima@example.com', grade: 'الصف الخامس' },
-      { id: 3, name: 'عمر حسن', email: 'omar@example.com', grade: 'الصف الخامس' }
-    ];
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
 
-    const sampleEvaluations = [
-      { id: 1, studentId: 1, subjectId: 1, date: '2024-06-01', scores: { 1: 85, 2: 78 } },
-      { id: 2, studentId: 1, subjectId: 1, date: '2024-06-15', scores: { 1: 90, 2: 82 } },
-      { id: 3, studentId: 2, subjectId: 1, date: '2024-06-01', scores: { 1: 92, 2: 88 } },
-      { id: 4, studentId: 1, subjectId: 2, date: '2024-06-01', scores: { 3: 88, 4: 85 } }
-    ];
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
 
-    setSubjects(sampleSubjects);
-    setStudents(sampleStudents);
-    setEvaluations(sampleEvaluations);
-  }, []);
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
 
-  const addSubject = () => {
-    const newSubject = {
-      id: Date.now(),
-      ...subjectForm,
-      skills: []
-    };
-    setSubjects([...subjects, newSubject]);
-    setSubjectForm({ name: '', description: '', color: '#3B82F6' });
-    setShowSubjectModal(false);
-  };
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
 
-  const addStudent = () => {
-    const newStudent = {
-      id: Date.now(),
-      ...studentForm
-    };
-    setStudents([...students, newStudent]);
-    setStudentForm({ name: '', email: '', grade: '' });
-    setShowStudentModal(false);
-  };
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 3px solid #e9ecef;
+        }
 
-  const addSkill = () => {
-    if (!selectedSubject) return;
-    
-    const newSkill = {
-      id: Date.now(),
-      ...skillForm
-    };
-    
-    setSubjects(subjects.map(subject => 
-      subject.id === selectedSubject.id 
-        ? { ...subject, skills: [...subject.skills, newSkill] }
-        : subject
-    ));
-    
-    setSkillForm({ name: '', description: '', maxScore: 100 });
-    setShowSkillModal(false);
-  };
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
 
-  const addEvaluation = () => {
-    const newEvaluation = {
-      id: Date.now(),
-      ...evaluationForm,
-      date: new Date().toISOString().split('T')[0]
-    };
-    setEvaluations([...evaluations, newEvaluation]);
-    setEvaluationForm({ studentId: '', subjectId: '', date: '', scores: {} });
-    setShowEvaluationModal(false);
-  };
+        .tab:hover {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            transform: translateY(-2px);
+        }
 
-  const getStudentProgress = (studentId, subjectId) => {
-    const studentEvals = evaluations.filter(e => e.studentId === studentId && e.subjectId === subjectId);
-    return studentEvals.map(eval => ({
-      date: eval.date,
-      average: Object.values(eval.scores).reduce((a, b) => a + b, 0) / Object.values(eval.scores).length
-    }));
-  };
+        .tab.active {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
 
-  const generatePDFReport = (student, subject) => {
-    const progress = getStudentProgress(student.id, subject.id);
-    const latestEval = evaluations.filter(e => e.studentId === student.id && e.subjectId === subject.id).pop();
-    
-    alert(`تم إنشاء تقرير PDF للطالب: ${student.name} في مادة: ${subject.name}\n\nسيتم تنزيل التقرير قريباً...`);
-  };
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s ease;
+        }
 
-  const StatCard = ({ title, value, icon: Icon, color, trend }) => (
-    <div className={`bg-gradient-to-br ${color} p-6 rounded-2xl shadow-lg text-white transform hover:scale-105 transition-all duration-300`}>
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-white/80 text-sm">{title}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
-          {trend && (
-            <div className="flex items-center mt-2 text-sm">
-              <TrendingUp className="w-4 h-4 ml-1" />
-              <span>{trend}%</span>
-            </div>
-          )}
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #51cf66, #69db7c);
+            box-shadow: 0 4px 15px rgba(81, 207, 102, 0.4);
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .card h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .skill-item, .student-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .skill-item:hover, .student-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .evaluation-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .evaluation-item {
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .evaluation-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .evaluation-item label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .evaluation-item input {
+            width: 80px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid #4facfe;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            transition: width 0.5s ease;
+        }
+
+        .student-card {
+            background: linear-gradient(45deg, #ffffff, #f8f9fa);
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .student-card:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.2);
+        }
+
+        .student-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.5);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-action:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 6px 25px rgba(79, 172, 254, 0.7);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: linear-gradient(45deg, #51cf66, #69db7c);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(81, 207, 102, 0.4);
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .evaluation-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 بوابة المعلمين</h1>
+            <p>نظام إدارة التقييم والمهارات التعليمية</p>
         </div>
-        <Icon className="w-8 h-8 text-white/80" />
-      </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('subjects')">📚 إدارة المواد</div>
+            <div class="tab" onclick="switchTab('students')">👥 إدارة الطلاب</div>
+            <div class="tab" onclick="switchTab('skills')">🎯 إدارة المهارات</div>
+            <div class="tab" onclick="switchTab('evaluation')">📊 التقييم</div>
+            <div class="tab" onclick="switchTab('reports')">📈 التقارير</div>
+        </div>
+
+        <!-- إدارة المواد -->
+        <div id="subjects" class="tab-content active">
+            <div class="card">
+                <h3>إضافة مادة جديدة</h3>
+                <div class="form-group">
+                    <label>اسم المادة</label>
+                    <input type="text" id="subjectName" placeholder="مثال: الرياضيات">
+                </div>
+                <div class="form-group">
+                    <label>وصف المادة</label>
+                    <textarea id="subjectDescription" placeholder="وصف مختصر للمادة..." rows="3"></textarea>
+                </div>
+                <button class="btn" onclick="addSubject()">إضافة المادة</button>
+            </div>
+
+            <div class="card">
+                <h3>المواد المضافة</h3>
+                <div id="subjectsList"></div>
+            </div>
+        </div>
+
+        <!-- إدارة الطلاب -->
+        <div id="students" class="tab-content">
+            <div class="card">
+                <h3>إضافة طالب جديد</h3>
+                <div class="form-group">
+                    <label>اسم الطالب</label>
+                    <input type="text" id="studentName" placeholder="اسم الطالب">
+                </div>
+                <div class="form-group">
+                    <label>اختر المادة</label>
+                    <select id="studentSubject">
+                        <option value="">اختر المادة</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="addStudent()">إضافة الطالب</button>
+            </div>
+
+            <div class="card">
+                <h3>قائمة الطلاب</h3>
+                <div id="studentsList"></div>
+            </div>
+        </div>
+
+        <!-- إدارة المهارات -->
+        <div id="skills" class="tab-content">
+            <div class="card">
+                <h3>إضافة مهارة جديدة</h3>
+                <div class="form-group">
+                    <label>اختر المادة</label>
+                    <select id="skillSubject">
+                        <option value="">اختر المادة</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>اسم المهارة</label>
+                    <input type="text" id="skillName" placeholder="مثال: حل المعادلات">
+                </div>
+                <div class="form-group">
+                    <label>وصف المهارة</label>
+                    <textarea id="skillDescription" placeholder="وصف تفصيلي للمهارة..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>الدرجة العظمى</label>
+                    <input type="number" id="skillMaxGrade" value="100" min="1" max="100">
+                </div>
+                <button class="btn" onclick="addSkill()">إضافة المهارة</button>
+            </div>
+
+            <div class="card">
+                <h3>المهارات المضافة</h3>
+                <div id="skillsList"></div>
+            </div>
+        </div>
+
+        <!-- التقييم -->
+        <div id="evaluation" class="tab-content">
+            <div class="card">
+                <h3>تقييم الطلاب</h3>
+                <div class="form-group">
+                    <label>اختر المادة</label>
+                    <select id="evalSubject" onchange="loadStudentsForEvaluation()">
+                        <option value="">اختر المادة</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>اختر الطالب</label>
+                    <select id="evalStudent" onchange="loadSkillsForEvaluation()">
+                        <option value="">اختر الطالب</option>
+                    </select>
+                </div>
+                <div id="evaluationForm"></div>
+            </div>
+        </div>
+
+        <!-- التقارير -->
+        <div id="reports" class="tab-content">
+            <div class="card">
+                <h3>تقارير الطلاب</h3>
+                <div class="form-group">
+                    <label>اختر المادة</label>
+                    <select id="reportSubject" onchange="loadStudentsForReport()">
+                        <option value="">اختر المادة</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>اختر الطالب</label>
+                    <select id="reportStudent" onchange="generateReport()">
+                        <option value="">اختر الطالب</option>
+                    </select>
+                </div>
+                <button class="btn btn-success" onclick="downloadPDF()" id="downloadBtn" style="display:none;">تحميل التقرير PDF</button>
+                <div id="reportContent"></div>
+                <div class="chart-container" style="display:none;" id="chartContainer">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+        </div>
     </div>
-  );
 
-  const Modal = ({ show, onClose, title, children }) => {
-    if (!show) return null;
-    
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-100">
-            <h3 className="text-xl font-bold text-gray-800">{title}</h3>
-          </div>
-          <div className="p-6">
-            {children}
-          </div>
-          <div className="p-6 border-t border-gray-100 flex justify-end space-x-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-            >
-              إلغاء
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
+    <div id="notification" class="notification"></div>
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100" dir="rtl">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-lg shadow-lg border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-purple-500 to-blue-500 p-3 rounded-xl">
-                <Award className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  نظام تقييم الطلاب
-                </h1>
-                <p className="text-gray-600">لوحة تحكم المدرس</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-gradient-to-r from-green-400 to-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium">
-                مرحباً بك!
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <script>
+        // تهيئة البيانات عند تحميل الصفحة
+        let subjects = JSON.parse(localStorage.getItem('subjects')) || [];
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let skills = JSON.parse(localStorage.getItem('skills')) || [];
+        let evaluations = JSON.parse(localStorage.getItem('evaluations')) || [];
 
-      {/* Navigation */}
-      <nav className="bg-white/60 backdrop-blur-sm border-b border-white/30">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex space-x-8">
-            {[
-              { key: 'dashboard', label: 'لوحة التحكم', icon: BarChart3 },
-              { key: 'subjects', label: 'المواد', icon: BookOpen },
-              { key: 'students', label: 'الطلاب', icon: Users },
-              { key: 'evaluation', label: 'التقييم', icon: Star }
-            ].map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => setActiveTab(key)}
-                className={`flex items-center space-x-2 py-4 px-2 border-b-2 transition-all duration-300 ${
-                  activeTab === key
-                    ? 'border-purple-500 text-purple-600'
-                    : 'border-transparent text-gray-600 hover:text-purple-500'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </nav>
+        // حفظ البيانات في localStorage
+        function saveData() {
+            localStorage.setItem('subjects', JSON.stringify(subjects));
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('skills', JSON.stringify(skills));
+            localStorage.setItem('evaluations', JSON.stringify(evaluations));
+        }
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {activeTab === 'dashboard' && (
-          <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <StatCard
-                title="إجمالي المواد"
-                value={subjects.length}
-                icon={BookOpen}
-                color="from-blue-500 to-purple-600"
-                trend="+12"
-              />
-              <StatCard
-                title="إجمالي الطلاب"
-                value={students.length}
-                icon={Users}
-                color="from-green-500 to-teal-600"
-                trend="+8"
-              />
-              <StatCard
-                title="التقييمات"
-                value={evaluations.length}
-                icon={Star}
-                color="from-orange-500 to-red-600"
-                trend="+15"
-              />
-              <StatCard
-                title="متوسط الأداء"
-                value="87%"
-                icon={TrendingUp}
-                color="from-purple-500 to-pink-600"
-                trend="+5"
-              />
-            </div>
+        // عرض إشعار
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
 
-            {/* Recent Activity */}
-            <div className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-6">النشاط الأخير</h3>
-              <div className="space-y-4">
-                {evaluations.slice(-5).map(eval => {
-                  const student = students.find(s => s.id === eval.studentId);
-                  const subject = subjects.find(s => s.id === eval.subjectId);
-                  const avgScore = Object.values(eval.scores).reduce((a, b) => a + b, 0) / Object.values(eval.scores).length;
-                  
-                  return (
-                    <div key={eval.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-white to-gray-50 rounded-xl border border-gray-100">
-                      <div className="flex items-center space-x-4">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold`} 
-                             style={{ backgroundColor: subject?.color }}>
-                          {student?.name.charAt(0)}
+        // تبديل التبويبات
+        function switchTab(tabName) {
+            // إخفاء جميع التبويبات
+            const tabs = document.querySelectorAll('.tab-content');
+            const tabButtons = document.querySelectorAll('.tab');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // إظهار التبويب المحدد
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // تحديث القوائم عند التبديل
+            if (tabName === 'subjects') loadSubjects();
+            if (tabName === 'students') loadStudentsTab();
+            if (tabName === 'skills') loadSkillsTab();
+            if (tabName === 'evaluation') loadEvaluationTab();
+            if (tabName === 'reports') loadReportsTab();
+        }
+
+        // إضافة مادة جديدة
+        function addSubject() {
+            const name = document.getElementById('subjectName').value.trim();
+            const description = document.getElementById('subjectDescription').value.trim();
+            
+            if (!name) {
+                alert('يرجى إدخال اسم المادة');
+                return;
+            }
+            
+            const subject = {
+                id: Date.now(),
+                name: name,
+                description: description,
+                createdAt: new Date().toLocaleDateString('ar-SA')
+            };
+            
+            subjects.push(subject);
+            saveData();
+            loadSubjects();
+            
+            // مسح النموذج
+            document.getElementById('subjectName').value = '';
+            document.getElementById('subjectDescription').value = '';
+            
+            showNotification('تم إضافة المادة بنجاح!');
+        }
+
+        // تحميل المواد
+        function loadSubjects() {
+            const container = document.getElementById('subjectsList');
+            if (subjects.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#6c757d;">لا توجد مواد مضافة بعد</p>';
+                return;
+            }
+            
+            container.innerHTML = subjects.map(subject => `
+                <div class="card">
+                    <h4>${subject.name}</h4>
+                    <p>${subject.description || 'لا يوجد وصف'}</p>
+                    <small>تاريخ الإضافة: ${subject.createdAt}</small>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-danger" onclick="deleteSubject(${subject.id})">حذف</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            // تحديث قوائم المواد في التبويبات الأخرى
+            updateSubjectSelects();
+        }
+
+        // حذف مادة
+        function deleteSubject(id) {
+            if (confirm('هل أنت متأكد من حذف هذه المادة؟ سيتم حذف جميع الطلاب والمهارات المرتبطة بها.')) {
+                subjects = subjects.filter(subject => subject.id !== id);
+                students = students.filter(student => student.subjectId !== id);
+                skills = skills.filter(skill => skill.subjectId !== id);
+                evaluations = evaluations.filter(evaluation => evaluation.subjectId !== id);
+                saveData();
+                loadSubjects();
+                showNotification('تم حذف المادة بنجاح!');
+            }
+        }
+
+        // تحديث قوائم المواد
+        function updateSubjectSelects() {
+            const selects = ['studentSubject', 'skillSubject', 'evalSubject', 'reportSubject'];
+            selects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    const currentValue = select.value;
+                    select.innerHTML = '<option value="">اختر المادة</option>' + 
+                        subjects.map(subject => `<option value="${subject.id}">${subject.name}</option>`).join('');
+                    select.value = currentValue;
+                }
+            });
+        }
+
+        // إضافة طالب
+        function addStudent() {
+            const name = document.getElementById('studentName').value.trim();
+            const subjectId = document.getElementById('studentSubject').value;
+            
+            if (!name || !subjectId) {
+                alert('يرجى إدخال جميع البيانات المطلوبة');
+                return;
+            }
+            
+            const student = {
+                id: Date.now(),
+                name: name,
+                subjectId: parseInt(subjectId),
+                createdAt: new Date().toLocaleDateString('ar-SA')
+            };
+            
+            students.push(student);
+            saveData();
+            loadStudentsTab();
+            
+            // مسح النموذج
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentSubject').value = '';
+            
+            showNotification('تم إضافة الطالب بنجاح!');
+        }
+
+        // تحميل تبويب الطلاب
+        function loadStudentsTab() {
+            updateSubjectSelects();
+            loadStudents();
+        }
+
+        // تحميل الطلاب
+        function loadStudents() {
+            const container = document.getElementById('studentsList');
+            if (students.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#6c757d;">لا يوجد طلاب مضافون بعد</p>';
+                return;
+            }
+            
+            const groupedStudents = {};
+            students.forEach(student => {
+                const subject = subjects.find(s => s.id === student.subjectId);
+                const subjectName = subject ? subject.name : 'مادة محذوفة';
+                if (!groupedStudents[subjectName]) {
+                    groupedStudents[subjectName] = [];
+                }
+                groupedStudents[subjectName].push(student);
+            });
+            
+            container.innerHTML = Object.keys(groupedStudents).map(subjectName => `
+                <div class="card">
+                    <h4>📚 ${subjectName}</h4>
+                    ${groupedStudents[subjectName].map(student => `
+                        <div class="student-item">
+                            <span>👤 ${student.name}</span>
+                            <button class="btn btn-danger" onclick="deleteStudent(${student.id})">حذف</button>
                         </div>
-                        <div>
-                          <p className="font-semibold text-gray-800">{student?.name}</p>
-                          <p className="text-sm text-gray-600">{subject?.name}</p>
+                    `).join('')}
+                </div>
+            `).join('');
+        }
+
+        // حذف طالب
+        function deleteStudent(id) {
+            if (confirm('هل أنت متأكد من حذف هذا الطالب؟ سيتم حذف جميع التقييمات المرتبطة به.')) {
+                students = students.filter(student => student.id !== id);
+                evaluations = evaluations.filter(evaluation => evaluation.studentId !== id);
+                saveData();
+                loadStudents();
+                showNotification('تم حذف الطالب بنجاح!');
+            }
+        }
+
+        // إضافة مهارة
+        function addSkill() {
+            const subjectId = document.getElementById('skillSubject').value;
+            const name = document.getElementById('skillName').value.trim();
+            const description = document.getElementById('skillDescription').value.trim();
+            const maxGrade = document.getElementById('skillMaxGrade').value;
+            
+            if (!subjectId || !name) {
+                alert('يرجى إدخال جميع البيانات المطلوبة');
+                return;
+            }
+            
+            const skill = {
+                id: Date.now(),
+                name: name,
+                description: description,
+                maxGrade: parseInt(maxGrade),
+                subjectId: parseInt(subjectId),
+                createdAt: new Date().toLocaleDateString('ar-SA')
+            };
+            
+            skills.push(skill);
+            saveData();
+            loadSkillsTab();
+            
+            // مسح النموذج
+            document.getElementById('skillSubject').value = '';
+            document.getElementById('skillName').value = '';
+            document.getElementById('skillDescription').value = '';
+            document.getElementById('skillMaxGrade').value = '100';
+            
+            showNotification('تم إضافة المهارة بنجاح!');
+        }
+
+        // تحميل تبويب المهارات
+        function loadSkillsTab() {
+            updateSubjectSelects();
+            loadSkills();
+        }
+
+        // تحميل المهارات
+        function loadSkills() {
+            const container = document.getElementById('skillsList');
+            if (skills.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#6c757d;">لا توجد مهارات مضافة بعد</p>';
+                return;
+            }
+            
+            const groupedSkills = {};
+            skills.forEach(skill => {
+                const subject = subjects.find(s => s.id === skill.subjectId);
+                const subjectName = subject ? subject.name : 'مادة محذوفة';
+                if (!groupedSkills[subjectName]) {
+                    groupedSkills[subjectName] = [];
+                }
+                groupedSkills[subjectName].push(skill);
+            });
+            
+            container.innerHTML = Object.keys(groupedSkills).map(subjectName => `
+                <div class="card">
+                    <h4>📚 ${subjectName}</h4>
+                    ${groupedSkills[subjectName].map(skill => `
+                        <div class="skill-item">
+                            <div>
+                                <strong>🎯 ${skill.name}</strong>
+                                <p style="margin: 5px 0; color: #6c757d;">${skill.description || 'لا يوجد وصف'}</p>
+                                <small>الدرجة العظمى: ${skill.maxGrade}</small>
+                            </div>
+                            <button class="btn btn-danger" onclick="deleteSkill(${skill.id})">حذف</button>
                         </div>
-                      </div>
-                      <div className="text-left">
-                        <p className="font-bold text-lg text-gray-800">{Math.round(avgScore)}%</p>
-                        <p className="text-sm text-gray-500">{eval.date}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'subjects' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">المواد الدراسية</h2>
-              <button
-                onClick={() => setShowSubjectModal(true)}
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
-              >
-                <PlusCircle className="w-5 h-5" />
-                <span>إضافة مادة</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {subjects.map(subject => (
-                <div key={subject.id} className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-12 h-12 rounded-xl text-white flex items-center justify-center font-bold"
-                         style={{ backgroundColor: subject.color }}>
-                      {subject.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800">{subject.name}</h3>
-                      <p className="text-sm text-gray-600">{subject.description}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">عدد المهارات:</span>
-                      <span className="font-bold">{subject.skills.length}</span>
-                    </div>
-                    
-                    <button
-                      onClick={() => {
-                        setSelectedSubject(subject);
-                        setShowSkillModal(true);
-                      }}
-                      className="w-full bg-gradient-to-r from-green-400 to-blue-500 text-white py-2 rounded-lg hover:shadow-lg transition-all duration-300"
-                    >
-                      إدارة المهارات
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'students' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">الطلاب</h2>
-              <button
-                onClick={() => setShowStudentModal(true)}
-                className="bg-gradient-to-r from-green-500 to-teal-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
-              >
-                <PlusCircle className="w-5 h-5" />
-                <span>إضافة طالب</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {students.map(student => (
-                <div key={student.id} className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300">
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      {student.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-gray-800">{student.name}</h3>
-                      <p className="text-sm text-gray-600">{student.grade}</p>
-                      <p className="text-sm text-gray-500">{student.email}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {subjects.map(subject => {
-                      const progress = getStudentProgress(student.id, subject.id);
-                      const latestScore = progress.length > 0 ? progress[progress.length - 1].average : 0;
-                      
-                      return (
-                        <div key={subject.id} className="flex justify-between items-center p-3 bg-gradient-to-r from-gray-50 to-white rounded-lg">
-                          <span className="text-gray-700 font-medium">{subject.name}</span>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-bold text-gray-800">{Math.round(latestScore)}%</span>
-                            <button
-                              onClick={() => generatePDFReport(student, subject)}
-                              className="text-blue-500 hover:text-blue-700"
-                            >
-                              <Download className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'evaluation' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-800">التقييم</h2>
-              <button
-                onClick={() => setShowEvaluationModal(true)}
-                className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all duration-300 flex items-center space-x-2"
-              >
-                <Star className="w-5 h-5" />
-                <span>تقييم جديد</span>
-              </button>
-            </div>
-
-            {/* Student Progress Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {students.map(student => (
-                <div key={student.id} className="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl p-6">
-                  <h3 className="text-xl font-bold text-gray-800 mb-6">{student.name} - تطور الأداء</h3>
-                  
-                  {subjects.map(subject => {
-                    const progress = getStudentProgress(student.id, subject.id);
-                    if (progress.length === 0) return null;
-                    
-                    return (
-                      <div key={subject.id} className="mb-8">
-                        <h4 className="font-semibold text-gray-700 mb-4">{subject.name}</h4>
-                        <div className="h-64">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={progress}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="date" />
-                              <YAxis domain={[0, 100]} />
-                              <Tooltip />
-                              <Line 
-                                type="monotone" 
-                                dataKey="average" 
-                                stroke={subject.color} 
-                                strokeWidth={3}
-                                dot={{ fill: subject.color, strokeWidth: 2, r: 6 }}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </main>
-
-      {/* Modals */}
-      <Modal show={showSubjectModal} onClose={() => setShowSubjectModal(false)} title="إضافة مادة جديدة">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">اسم المادة</label>
-            <input
-              type="text"
-              value={subjectForm.name}
-              onChange={(e) => setSubjectForm({...subjectForm, name: e.target.value})}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-              placeholder="مثال: الرياضيات"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">الوصف</label>
-            <textarea
-              value={subjectForm.description}
-              onChange={(e) => setSubjectForm({...subjectForm, description: e.target.value})}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-              rows="3"
-              placeholder="وصف المادة..."
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">اللون</label>
-            <input
-              type="color"
-              value={subjectForm.color}
-              onChange={(e) => setSubjectForm({...subjectForm, color: e.target.value})}
-              className="w-full h-12 border border-gray-300 rounded-lg"
-            />
-          </div>
-          <button
-            onClick={addSubject}
-            className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-3 rounded-lg hover:shadow-lg transition-all duration-300"
-          >
-            إضافة المادة
-          </button>
-        </div>
-      </Modal>
-
-      <Modal show={showStudentModal} onClose={() => setShowStudentModal(false)} title="إضافة طالب جديد">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">اسم الطالب</label>
-            <input
-              type="text"
-              value={studentForm.name}
-              onChange={(e) => setStudentForm({...studentForm, name: e.target.value})}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              placeholder="الاسم الكامل"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">البريد الإلكتروني</label>
-            <input
-              type="email"
-              value={studentForm.email}
-              onChange={(e) => setStudentForm({...studentForm, email: e.target.value})}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              placeholder="student@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">الصف</label>
-            <input
-              type="text"
-              value={studentForm.grade}
-              onChange={(e) => setStudentForm({...studentForm, grade: e.target.value})}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
-              placeholder="مثال: الصف الخامس"
-            />
-          </div>
-          <button
-            onClick={addStudent}
-            className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 rounded-lg hover:shadow-lg transition-all duration-300"
-          >
-            إضافة الطالب
-          </button>
-        </div>
-      </Modal>
-
-      <Modal show={showSkillModal} onClose={() => setShowSkillModal(false)} title={`إدارة مهارات: ${selectedSubject?.name}`}>
-        <div className="space-y-6">
-          {/* Add new skill form */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-medium text-gray-800 mb-3">إضافة مهارة جديدة</h4>
-            <div className="space-y-3">
-              <input
-                type="text"
-                value={skillForm.name}
-                onChange={(e) => setSkillForm({...skillForm, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="اسم المهارة"
-              />
-              <textarea
-                value={skillForm.description}
-                onChange={(e) => setSkillForm({...skillForm, description: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                rows="2"
-                placeholder="وصف المهارة"
-              />
-              <input
-                type="number"
-                value={skillForm.maxScore}
-                onChange={(e) => setSkillForm({...skillForm, maxScore: parseInt(e.target.value)})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                placeholder="الدرجة العظمى"
-              />
-              <button
-                onClick={addSkill}
-                className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600"
-              >
-                إضافة المهارة
-              </button>
-            </div>
-          </div>
-
-          {/* Existing skills */}
-          <div>
-            <h4 className="font-medium text-gray-800 mb-3">المهارات الحالية</h4>
-            <div className="space-y-2">
-              {selectedSubject?.skills?.map(skill => (
-                <div key={skill.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                  <div>
-                    <p className="font-medium">{skill.name}</p>
-                    <p className="text-sm text-gray-600">{skill.description}</p>
-                  </div>
-                  <span className="text-sm font-medium text-gray-500">/{skill.maxScore}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal show={showEvaluationModal} onClose={() => setShowEvaluationModal(false)} title="تقييم جديد">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">الطالب</label>
-            <select
-              value={evaluationForm.studentId}
-              onChange={(e) => setEvaluationForm({...evaluationForm, studentId: parseInt(e.target.value)})}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="">اختر الطالب</option>
-              {students.map(student => (
-                <option key={student.id} value={student.id}>{student.name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">المادة</label>
-            <select
-              value={evaluationForm.subjectId}
-              onChange={(e) => setEvaluationForm({...evaluationForm, subjectId: parseInt(e.target.value)})}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="">اختر المادة</option>
-              {subjects.map(subject => (
-                <option key={subject.id} value={subject.id}>{subject.name}</option>
-              ))}
-            </select>
-          </div>
-          
-          {evaluationForm.subjectId && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">تقييم المهارات</label>
-              {subjects.find(s => s.id === evaluationForm.subjectId)?.skills?.map(skill => (
-                <div key={skill.id} className="mb-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium">{skill.name}</span>
-                    <span className="text-sm text-gray-500">من {skill.maxScore}</span>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max={skill.maxScore}
-                    value={evaluationForm.scores[skill.id] || ''}
-                    onChange={(e) => setEvaluationForm({
-                      ...evaluationForm,
-                      scores: {
-                        ...evaluationForm.scores,
-                        [skill.id]: parseInt(e.target.value) || 0
-                      }
-                    })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                    placeholder={`الدرجة من ${skill.maxScore}`}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <button
-            onClick={addEvaluation}
-            disabled={!evaluationForm.studentId || !evaluationForm.subjectId}
-            className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-lg hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            حفظ التقييم
-          </button>
-        </div>
-      </Modal>
-    </div>
-  );
-};
-
-export default TeacherDashboard;
+                    `
