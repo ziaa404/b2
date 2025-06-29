@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوابة المعلمين - نظام إدارة التقييم</title>
+    <title>نظام تقييم الطلاب الشامل</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
@@ -12,343 +12,239 @@
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            color: #333;
         }
-
+        
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
-            overflow: hidden;
-        }
-
-        .header {
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
-            color: white;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-            position: relative;
-            z-index: 1;
-        }
-
-        .tabs {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 3px solid #e9ecef;
-        }
-
-        .tab {
-            flex: 1;
             padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
-
-        .tab:hover {
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
+        
+        .header {
+            text-align: center;
             color: white;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .nav-tab {
+            padding: 15px 25px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
         }
-
-        .tab.active {
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
-            color: white;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        
+        .nav-tab.active {
+            background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-
-        .tab-content {
+        
+        .content-section {
             display: none;
+            background: white;
             padding: 30px;
-            animation: fadeIn 0.5s ease;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease-in;
         }
-
-        .tab-content.active {
+        
+        .content-section.active {
             display: block;
         }
-
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
+        
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
-
-        .form-group label {
+        
+        label {
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: #495057;
-            font-size: 1.1em;
+            color: #555;
         }
-
-        .form-group input, .form-group select, .form-group textarea {
+        
+        input, select, textarea {
             width: 100%;
-            padding: 15px;
-            border: 2px solid #e9ecef;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
             border-radius: 10px;
             font-size: 16px;
             transition: all 0.3s ease;
-            background: #fff;
         }
-
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        
+        input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #4facfe;
-            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.2);
-            transform: translateY(-2px);
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
         }
-
-        .btn {
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
+        
+        button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
+            padding: 12px 30px;
             border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
-            margin: 10px 5px;
+            margin: 5px;
         }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
-
-        .btn-danger {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
-        }
-
-        .btn-success {
-            background: linear-gradient(45deg, #51cf66, #69db7c);
-            box-shadow: 0 4px 15px rgba(81, 207, 102, 0.4);
-        }
-
+        
         .card {
-            background: white;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
             border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 10px 0;
+            border-left: 5px solid #667eea;
             transition: all 0.3s ease;
-            border: 1px solid #e9ecef;
         }
-
+        
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+            transform: translateX(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
-
-        .card h3 {
-            color: #495057;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .skill-item, .student-item {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 10px;
+        
+        .skill-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
+            padding: 10px;
+            background: white;
+            margin: 5px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        .skill-item:hover, .student-item:hover {
-            background: #e3f2fd;
-            transform: translateX(5px);
-        }
-
+        
         .chart-container {
-            position: relative;
+            width: 100%;
             height: 400px;
             margin: 20px 0;
+            padding: 20px;
             background: white;
             border-radius: 15px;
-            padding: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-
-        .evaluation-grid {
+        
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
         }
-
-        .evaluation-item {
-            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-            padding: 20px;
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
             border-radius: 10px;
-            text-align: center;
+            margin: 10px 0;
+            border: 1px solid #c3e6cb;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .delete-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .student-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 10px 0;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
-
-        .evaluation-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        
+        .student-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-
-        .evaluation-item label {
-            display: block;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #495057;
+        
+        .assessment-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
         }
-
-        .evaluation-item input {
-            width: 80px;
-            text-align: center;
-            font-size: 18px;
-            font-weight: bold;
-            border: 2px solid #4facfe;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e9ecef;
-            border-radius: 4px;
-            overflow: hidden;
+        
+        .skill-rating {
+            display: flex;
+            gap: 10px;
+            align-items: center;
             margin: 10px 0;
         }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
-            transition: width 0.5s ease;
+        
+        .rating-input {
+            width: 80px;
         }
-
-        .student-card {
-            background: linear-gradient(45deg, #ffffff, #f8f9fa);
-            border: 2px solid #e9ecef;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .student-card:hover {
-            border-color: #4facfe;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.2);
-        }
-
-        .student-name {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #495057;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .floating-action {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #4facfe, #00f2fe);
-            color: white;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.5);
-            transition: all 0.3s ease;
-            z-index: 1000;
-        }
-
-        .floating-action:hover {
-            transform: scale(1.1) rotate(180deg);
-            box-shadow: 0 6px 25px rgba(79, 172, 254, 0.7);
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
-            background: linear-gradient(45deg, #51cf66, #69db7c);
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(81, 207, 102, 0.4);
-            transform: translateX(400px);
-            transition: all 0.3s ease;
-            z-index: 1001;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
+        
         @media (max-width: 768px) {
-            .tabs {
+            .nav-tabs {
                 flex-direction: column;
             }
             
-            .evaluation-grid {
-                grid-template-columns: 1fr;
+            .header h1 {
+                font-size: 2rem;
             }
             
             .container {
-                margin: 10px;
-                border-radius: 10px;
-            }
-            
-            .header h1 {
-                font-size: 2em;
+                padding: 10px;
             }
         }
     </style>
@@ -356,190 +252,161 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎓 بوابة المعلمين</h1>
-            <p>نظام إدارة التقييم والمهارات التعليمية</p>
+            <h1>🎓 نظام تقييم الطلاب الشامل</h1>
+            <p>منصة متكاملة لإدارة وتقييم أداء الطلاب</p>
         </div>
-
-        <div class="tabs">
-            <div class="tab active" onclick="switchTab('subjects')">📚 إدارة المواد</div>
-            <div class="tab" onclick="switchTab('students')">👥 إدارة الطلاب</div>
-            <div class="tab" onclick="switchTab('skills')">🎯 إدارة المهارات</div>
-            <div class="tab" onclick="switchTab('evaluation')">📊 التقييم</div>
-            <div class="tab" onclick="switchTab('reports')">📈 التقارير</div>
+        
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showSection('subjects')">📚 إدارة المواد</button>
+            <button class="nav-tab" onclick="showSection('students')">👥 إدارة الطلاب</button>
+            <button class="nav-tab" onclick="showSection('assessment')">📊 التقييم</button>
+            <button class="nav-tab" onclick="showSection('reports')">📈 التقارير</button>
         </div>
-
+        
         <!-- إدارة المواد -->
-        <div id="subjects" class="tab-content active">
-            <div class="card">
-                <h3>إضافة مادة جديدة</h3>
-                <div class="form-group">
-                    <label>اسم المادة</label>
-                    <input type="text" id="subjectName" placeholder="مثال: الرياضيات">
-                </div>
-                <div class="form-group">
-                    <label>وصف المادة</label>
-                    <textarea id="subjectDescription" placeholder="وصف مختصر للمادة..." rows="3"></textarea>
-                </div>
-                <button class="btn" onclick="addSubject()">إضافة المادة</button>
+        <div id="subjects" class="content-section active">
+            <h2>📚 إدارة المواد الدراسية</h2>
+            
+            <div class="form-group">
+                <label>اسم المادة:</label>
+                <input type="text" id="subjectName" placeholder="أدخل اسم المادة">
             </div>
-
-            <div class="card">
-                <h3>المواد المضافة</h3>
-                <div id="subjectsList"></div>
+            
+            <div class="form-group">
+                <label>وصف المادة:</label>
+                <textarea id="subjectDescription" placeholder="وصف مختصر للمادة" rows="3"></textarea>
             </div>
-        </div>
-
-        <!-- إدارة الطلاب -->
-        <div id="students" class="tab-content">
-            <div class="card">
-                <h3>إضافة طالب جديد</h3>
+            
+            <button onclick="addSubject()">➕ إضافة مادة</button>
+            
+            <div id="subjectsList"></div>
+            
+            <div id="skillsManagement" style="display: none;">
+                <h3>إدارة المهارات للمادة: <span id="currentSubjectName"></span></h3>
+                
                 <div class="form-group">
-                    <label>اسم الطالب</label>
-                    <input type="text" id="studentName" placeholder="اسم الطالب">
+                    <label>اسم المهارة:</label>
+                    <input type="text" id="skillName" placeholder="أدخل اسم المهارة">
                 </div>
+                
                 <div class="form-group">
-                    <label>اختر المادة</label>
-                    <select id="studentSubject">
-                        <option value="">اختر المادة</option>
-                    </select>
+                    <label>وصف المهارة:</label>
+                    <input type="text" id="skillDescription" placeholder="وصف المهارة">
                 </div>
-                <button class="btn" onclick="addStudent()">إضافة الطالب</button>
-            </div>
-
-            <div class="card">
-                <h3>قائمة الطلاب</h3>
-                <div id="studentsList"></div>
-            </div>
-        </div>
-
-        <!-- إدارة المهارات -->
-        <div id="skills" class="tab-content">
-            <div class="card">
-                <h3>إضافة مهارة جديدة</h3>
+                
                 <div class="form-group">
-                    <label>اختر المادة</label>
-                    <select id="skillSubject">
-                        <option value="">اختر المادة</option>
-                    </select>
+                    <label>الحد الأقصى للدرجة:</label>
+                    <input type="number" id="skillMaxScore" value="100" min="1">
                 </div>
-                <div class="form-group">
-                    <label>اسم المهارة</label>
-                    <input type="text" id="skillName" placeholder="مثال: حل المعادلات">
-                </div>
-                <div class="form-group">
-                    <label>وصف المهارة</label>
-                    <textarea id="skillDescription" placeholder="وصف تفصيلي للمهارة..." rows="3"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>الدرجة العظمى</label>
-                    <input type="number" id="skillMaxGrade" value="100" min="1" max="100">
-                </div>
-                <button class="btn" onclick="addSkill()">إضافة المهارة</button>
-            </div>
-
-            <div class="card">
-                <h3>المهارات المضافة</h3>
+                
+                <button onclick="addSkill()">➕ إضافة مهارة</button>
+                <button onclick="hideSkillsManagement()">🔙 العودة</button>
+                
                 <div id="skillsList"></div>
             </div>
         </div>
-
-        <!-- التقييم -->
-        <div id="evaluation" class="tab-content">
-            <div class="card">
-                <h3>تقييم الطلاب</h3>
-                <div class="form-group">
-                    <label>اختر المادة</label>
-                    <select id="evalSubject" onchange="loadStudentsForEvaluation()">
-                        <option value="">اختر المادة</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>اختر الطالب</label>
-                    <select id="evalStudent" onchange="loadSkillsForEvaluation()">
-                        <option value="">اختر الطالب</option>
-                    </select>
-                </div>
-                <div id="evaluationForm"></div>
+        
+        <!-- إدارة الطلاب -->
+        <div id="students" class="content-section">
+            <h2>👥 إدارة الطلاب</h2>
+            
+            <div class="form-group">
+                <label>اسم الطالب:</label>
+                <input type="text" id="studentName" placeholder="أدخل اسم الطالب">
             </div>
+            
+            <div class="form-group">
+                <label>الرقم الطلابي:</label>
+                <input type="text" id="studentId" placeholder="رقم الطالب">
+            </div>
+            
+            <div class="form-group">
+                <label>الصف:</label>
+                <input type="text" id="studentGrade" placeholder="الصف">
+            </div>
+            
+            <button onclick="addStudent()">➕ إضافة طالب</button>
+            
+            <div id="studentsList"></div>
         </div>
-
-        <!-- التقارير -->
-        <div id="reports" class="tab-content">
-            <div class="card">
-                <h3>تقارير الطلاب</h3>
-                <div class="form-group">
-                    <label>اختر المادة</label>
-                    <select id="reportSubject" onchange="loadStudentsForReport()">
-                        <option value="">اختر المادة</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>اختر الطالب</label>
-                    <select id="reportStudent" onchange="generateReport()">
-                        <option value="">اختر الطالب</option>
-                    </select>
-                </div>
-                <button class="btn btn-success" onclick="downloadPDF()" id="downloadBtn" style="display:none;">تحميل التقرير PDF</button>
-                <div id="reportContent"></div>
-                <div class="chart-container" style="display:none;" id="chartContainer">
-                    <canvas id="skillsChart"></canvas>
-                </div>
+        
+        <!-- التقييم -->
+        <div id="assessment" class="content-section">
+            <h2>📊 تقييم الطلاب</h2>
+            
+            <div class="form-group">
+                <label>اختر الطالب:</label>
+                <select id="assessmentStudent">
+                    <option value="">اختر طالب</option>
+                </select>
             </div>
+            
+            <div class="form-group">
+                <label>اختر المادة:</label>
+                <select id="assessmentSubject" onchange="loadSubjectSkills()">
+                    <option value="">اختر مادة</option>
+                </select>
+            </div>
+            
+            <div id="skillsAssessment"></div>
+            
+            <button onclick="saveAssessment()" id="saveAssessmentBtn" style="display: none;">💾 حفظ التقييم</button>
+        </div>
+        
+        <!-- التقارير -->
+        <div id="reports" class="content-section">
+            <h2>📈 التقارير والإحصائيات</h2>
+            
+            <div class="form-group">
+                <label>اختر الطالب للتقرير:</label>
+                <select id="reportStudent" onchange="generateReport()">
+                    <option value="">اختر طالب</option>
+                </select>
+            </div>
+            
+            <div id="studentReport"></div>
+            
+            <button onclick="exportToPDF()" id="exportBtn" style="display: none;">📄 تصدير كـ PDF</button>
         </div>
     </div>
 
-    <div id="notification" class="notification"></div>
-
     <script>
-        // تهيئة البيانات عند تحميل الصفحة
+        // متغيرات النظام
         let subjects = JSON.parse(localStorage.getItem('subjects')) || [];
         let students = JSON.parse(localStorage.getItem('students')) || [];
-        let skills = JSON.parse(localStorage.getItem('skills')) || [];
-        let evaluations = JSON.parse(localStorage.getItem('evaluations')) || [];
+        let assessments = JSON.parse(localStorage.getItem('assessments')) || [];
+        let currentSubjectId = null;
 
-        // حفظ البيانات في localStorage
+        // تحديث البيانات المحفوظة
         function saveData() {
             localStorage.setItem('subjects', JSON.stringify(subjects));
             localStorage.setItem('students', JSON.stringify(students));
-            localStorage.setItem('skills', JSON.stringify(skills));
-            localStorage.setItem('evaluations', JSON.stringify(evaluations));
+            localStorage.setItem('assessments', JSON.stringify(assessments));
         }
 
-        // عرض إشعار
-        function showNotification(message) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.classList.add('show');
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // تبديل التبويبات
-        function switchTab(tabName) {
-            // إخفاء جميع التبويبات
-            const tabs = document.querySelectorAll('.tab-content');
-            const tabButtons = document.querySelectorAll('.tab');
+        // عرض الأقسام
+        function showSection(sectionName) {
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
             
-            tabs.forEach(tab => tab.classList.remove('active'));
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            
-            // إظهار التبويب المحدد
-            document.getElementById(tabName).classList.add('active');
+            document.getElementById(sectionName).classList.add('active');
             event.target.classList.add('active');
             
-            // تحديث القوائم عند التبديل
-            if (tabName === 'subjects') loadSubjects();
-            if (tabName === 'students') loadStudentsTab();
-            if (tabName === 'skills') loadSkillsTab();
-            if (tabName === 'evaluation') loadEvaluationTab();
-            if (tabName === 'reports') loadReportsTab();
+            if (sectionName === 'assessment') {
+                loadAssessmentOptions();
+            } else if (sectionName === 'reports') {
+                loadReportOptions();
+            }
         }
 
         // إضافة مادة جديدة
         function addSubject() {
-            const name = document.getElementById('subjectName').value.trim();
-            const description = document.getElementById('subjectDescription').value.trim();
+            const name = document.getElementById('subjectName').value;
+            const description = document.getElementById('subjectDescription').value;
             
             if (!name) {
                 alert('يرجى إدخال اسم المادة');
@@ -550,155 +417,64 @@
                 id: Date.now(),
                 name: name,
                 description: description,
-                createdAt: new Date().toLocaleDateString('ar-SA')
+                skills: []
             };
             
             subjects.push(subject);
             saveData();
-            loadSubjects();
+            displaySubjects();
             
-            // مسح النموذج
             document.getElementById('subjectName').value = '';
             document.getElementById('subjectDescription').value = '';
             
-            showNotification('تم إضافة المادة بنجاح!');
+            showSuccessMessage('تم إضافة المادة بنجاح!');
         }
 
-        // تحميل المواد
-        function loadSubjects() {
+        // عرض المواد
+        function displaySubjects() {
             const container = document.getElementById('subjectsList');
-            if (subjects.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#6c757d;">لا توجد مواد مضافة بعد</p>';
-                return;
-            }
+            container.innerHTML = '';
             
-            container.innerHTML = subjects.map(subject => `
-                <div class="card">
-                    <h4>${subject.name}</h4>
-                    <p>${subject.description || 'لا يوجد وصف'}</p>
-                    <small>تاريخ الإضافة: ${subject.createdAt}</small>
-                    <div style="margin-top: 15px;">
-                        <button class="btn btn-danger" onclick="deleteSubject(${subject.id})">حذف</button>
-                    </div>
-                </div>
-            `).join('');
-            
-            // تحديث قوائم المواد في التبويبات الأخرى
-            updateSubjectSelects();
-        }
-
-        // حذف مادة
-        function deleteSubject(id) {
-            if (confirm('هل أنت متأكد من حذف هذه المادة؟ سيتم حذف جميع الطلاب والمهارات المرتبطة بها.')) {
-                subjects = subjects.filter(subject => subject.id !== id);
-                students = students.filter(student => student.subjectId !== id);
-                skills = skills.filter(skill => skill.subjectId !== id);
-                evaluations = evaluations.filter(evaluation => evaluation.subjectId !== id);
-                saveData();
-                loadSubjects();
-                showNotification('تم حذف المادة بنجاح!');
-            }
-        }
-
-        // تحديث قوائم المواد
-        function updateSubjectSelects() {
-            const selects = ['studentSubject', 'skillSubject', 'evalSubject', 'reportSubject'];
-            selects.forEach(selectId => {
-                const select = document.getElementById(selectId);
-                if (select) {
-                    const currentValue = select.value;
-                    select.innerHTML = '<option value="">اختر المادة</option>' + 
-                        subjects.map(subject => `<option value="${subject.id}">${subject.name}</option>`).join('');
-                    select.value = currentValue;
-                }
+            subjects.forEach(subject => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <h3>${subject.name}</h3>
+                    <p>${subject.description}</p>
+                    <p><strong>المهارات:</strong> ${subject.skills.length}</p>
+                    <button onclick="manageSkills(${subject.id})">🔧 إدارة المهارات</button>
+                    <button class="delete-btn" onclick="deleteSubject(${subject.id})">🗑️ حذف</button>
+                `;
+                container.appendChild(card);
             });
         }
 
-        // إضافة طالب
-        function addStudent() {
-            const name = document.getElementById('studentName').value.trim();
-            const subjectId = document.getElementById('studentSubject').value;
+        // إدارة المهارات
+        function manageSkills(subjectId) {
+            currentSubjectId = subjectId;
+            const subject = subjects.find(s => s.id === subjectId);
             
-            if (!name || !subjectId) {
-                alert('يرجى إدخال جميع البيانات المطلوبة');
-                return;
-            }
+            document.getElementById('currentSubjectName').textContent = subject.name;
+            document.getElementById('skillsManagement').style.display = 'block';
+            document.getElementById('subjectsList').style.display = 'none';
             
-            const student = {
-                id: Date.now(),
-                name: name,
-                subjectId: parseInt(subjectId),
-                createdAt: new Date().toLocaleDateString('ar-SA')
-            };
-            
-            students.push(student);
-            saveData();
-            loadStudentsTab();
-            
-            // مسح النموذج
-            document.getElementById('studentName').value = '';
-            document.getElementById('studentSubject').value = '';
-            
-            showNotification('تم إضافة الطالب بنجاح!');
+            displaySkills();
         }
 
-        // تحميل تبويب الطلاب
-        function loadStudentsTab() {
-            updateSubjectSelects();
-            loadStudents();
-        }
-
-        // تحميل الطلاب
-        function loadStudents() {
-            const container = document.getElementById('studentsList');
-            if (students.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#6c757d;">لا يوجد طلاب مضافون بعد</p>';
-                return;
-            }
-            
-            const groupedStudents = {};
-            students.forEach(student => {
-                const subject = subjects.find(s => s.id === student.subjectId);
-                const subjectName = subject ? subject.name : 'مادة محذوفة';
-                if (!groupedStudents[subjectName]) {
-                    groupedStudents[subjectName] = [];
-                }
-                groupedStudents[subjectName].push(student);
-            });
-            
-            container.innerHTML = Object.keys(groupedStudents).map(subjectName => `
-                <div class="card">
-                    <h4>📚 ${subjectName}</h4>
-                    ${groupedStudents[subjectName].map(student => `
-                        <div class="student-item">
-                            <span>👤 ${student.name}</span>
-                            <button class="btn btn-danger" onclick="deleteStudent(${student.id})">حذف</button>
-                        </div>
-                    `).join('')}
-                </div>
-            `).join('');
-        }
-
-        // حذف طالب
-        function deleteStudent(id) {
-            if (confirm('هل أنت متأكد من حذف هذا الطالب؟ سيتم حذف جميع التقييمات المرتبطة به.')) {
-                students = students.filter(student => student.id !== id);
-                evaluations = evaluations.filter(evaluation => evaluation.studentId !== id);
-                saveData();
-                loadStudents();
-                showNotification('تم حذف الطالب بنجاح!');
-            }
+        function hideSkillsManagement() {
+            document.getElementById('skillsManagement').style.display = 'none';
+            document.getElementById('subjectsList').style.display = 'block';
+            currentSubjectId = null;
         }
 
         // إضافة مهارة
         function addSkill() {
-            const subjectId = document.getElementById('skillSubject').value;
-            const name = document.getElementById('skillName').value.trim();
-            const description = document.getElementById('skillDescription').value.trim();
-            const maxGrade = document.getElementById('skillMaxGrade').value;
+            const name = document.getElementById('skillName').value;
+            const description = document.getElementById('skillDescription').value;
+            const maxScore = parseInt(document.getElementById('skillMaxScore').value);
             
-            if (!subjectId || !name) {
-                alert('يرجى إدخال جميع البيانات المطلوبة');
+            if (!name) {
+                alert('يرجى إدخال اسم المهارة');
                 return;
             }
             
@@ -706,58 +482,461 @@
                 id: Date.now(),
                 name: name,
                 description: description,
-                maxGrade: parseInt(maxGrade),
-                subjectId: parseInt(subjectId),
-                createdAt: new Date().toLocaleDateString('ar-SA')
+                maxScore: maxScore
             };
             
-            skills.push(skill);
+            const subject = subjects.find(s => s.id === currentSubjectId);
+            subject.skills.push(skill);
             saveData();
-            loadSkillsTab();
+            displaySkills();
             
-            // مسح النموذج
-            document.getElementById('skillSubject').value = '';
             document.getElementById('skillName').value = '';
             document.getElementById('skillDescription').value = '';
-            document.getElementById('skillMaxGrade').value = '100';
+            document.getElementById('skillMaxScore').value = '100';
             
-            showNotification('تم إضافة المهارة بنجاح!');
+            showSuccessMessage('تم إضافة المهارة بنجاح!');
         }
 
-        // تحميل تبويب المهارات
-        function loadSkillsTab() {
-            updateSubjectSelects();
-            loadSkills();
-        }
-
-        // تحميل المهارات
-        function loadSkills() {
+        // عرض المهارات
+        function displaySkills() {
             const container = document.getElementById('skillsList');
-            if (skills.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#6c757d;">لا توجد مهارات مضافة بعد</p>';
+            const subject = subjects.find(s => s.id === currentSubjectId);
+            container.innerHTML = '';
+            
+            if (subject.skills.length === 0) {
+                container.innerHTML = '<p>لا توجد مهارات مضافة لهذه المادة</p>';
                 return;
             }
             
-            const groupedSkills = {};
-            skills.forEach(skill => {
-                const subject = subjects.find(s => s.id === skill.subjectId);
-                const subjectName = subject ? subject.name : 'مادة محذوفة';
-                if (!groupedSkills[subjectName]) {
-                    groupedSkills[subjectName] = [];
-                }
-                groupedSkills[subjectName].push(skill);
+            subject.skills.forEach(skill => {
+                const skillDiv = document.createElement('div');
+                skillDiv.className = 'skill-item';
+                skillDiv.innerHTML = `
+                    <div>
+                        <strong>${skill.name}</strong>
+                        <p>${skill.description}</p>
+                        <small>الحد الأقصى: ${skill.maxScore}</small>
+                    </div>
+                    <button class="delete-btn" onclick="deleteSkill(${skill.id})">حذف</button>
+                `;
+                container.appendChild(skillDiv);
+            });
+        }
+
+        // إضافة طالب
+        function addStudent() {
+            const name = document.getElementById('studentName').value;
+            const id = document.getElementById('studentId').value;
+            const grade = document.getElementById('studentGrade').value;
+            
+            if (!name || !id) {
+                alert('يرجى إدخال اسم الطالب والرقم الطلابي');
+                return;
+            }
+            
+            const student = {
+                id: Date.now(),
+                name: name,
+                studentId: id,
+                grade: grade
+            };
+            
+            students.push(student);
+            saveData();
+            displayStudents();
+            
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentId').value = '';
+            document.getElementById('studentGrade').value = '';
+            
+            showSuccessMessage('تم إضافة الطالب بنجاح!');
+        }
+
+        // عرض الطلاب
+        function displayStudents() {
+            const container = document.getElementById('studentsList');
+            container.innerHTML = '';
+            
+            students.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.innerHTML = `
+                    <h3>${student.name}</h3>
+                    <p><strong>الرقم الطلابي:</strong> ${student.studentId}</p>
+                    <p><strong>الصف:</strong> ${student.grade}</p>
+                    <button class="delete-btn" onclick="deleteStudent(${student.id})">🗑️ حذف</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // تحميل خيارات التقييم
+        function loadAssessmentOptions() {
+            const studentSelect = document.getElementById('assessmentStudent');
+            const subjectSelect = document.getElementById('assessmentSubject');
+            
+            studentSelect.innerHTML = '<option value="">اختر طالب</option>';
+            subjectSelect.innerHTML = '<option value="">اختر مادة</option>';
+            
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = student.name;
+                studentSelect.appendChild(option);
             });
             
-            container.innerHTML = Object.keys(groupedSkills).map(subjectName => `
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject.id;
+                option.textContent = subject.name;
+                subjectSelect.appendChild(option);
+            });
+        }
+
+        // تحميل مهارات المادة للتقييم
+        function loadSubjectSkills() {
+            const subjectId = parseInt(document.getElementById('assessmentSubject').value);
+            const container = document.getElementById('skillsAssessment');
+            
+            if (!subjectId) {
+                container.innerHTML = '';
+                document.getElementById('saveAssessmentBtn').style.display = 'none';
+                return;
+            }
+            
+            const subject = subjects.find(s => s.id === subjectId);
+            container.innerHTML = '<h3>تقييم المهارات:</h3>';
+            
+            subject.skills.forEach(skill => {
+                const skillDiv = document.createElement('div');
+                skillDiv.className = 'assessment-form';
+                skillDiv.innerHTML = `
+                    <div class="skill-rating">
+                        <label><strong>${skill.name}:</strong></label>
+                        <input type="number" class="rating-input" min="0" max="${skill.maxScore}" 
+                               id="skill_${skill.id}" placeholder="0-${skill.maxScore}">
+                        <span>/ ${skill.maxScore}</span>
+                    </div>
+                    <p><small>${skill.description}</small></p>
+                `;
+                container.appendChild(skillDiv);
+            });
+            
+            document.getElementById('saveAssessmentBtn').style.display = 'block';
+        }
+
+        // حفظ التقييم
+        function saveAssessment() {
+            const studentId = parseInt(document.getElementById('assessmentStudent').value);
+            const subjectId = parseInt(document.getElementById('assessmentSubject').value);
+            
+            if (!studentId || !subjectId) {
+                alert('يرجى اختيار الطالب والمادة');
+                return;
+            }
+            
+            const subject = subjects.find(s => s.id === subjectId);
+            const scores = {};
+            
+            subject.skills.forEach(skill => {
+                const score = document.getElementById(`skill_${skill.id}`).value;
+                if (score !== '') {
+                    scores[skill.id] = parseInt(score);
+                }
+            });
+            
+            const assessment = {
+                id: Date.now(),
+                studentId: studentId,
+                subjectId: subjectId,
+                scores: scores,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            // حذف التقييم السابق إن وجد
+            assessments = assessments.filter(a => !(a.studentId === studentId && a.subjectId === subjectId));
+            assessments.push(assessment);
+            
+            saveData();
+            showSuccessMessage('تم حفظ التقييم بنجاح!');
+            
+            // إعادة تعيين النموذج
+            document.getElementById('assessmentStudent').value = '';
+            document.getElementById('assessmentSubject').value = '';
+            document.getElementById('skillsAssessment').innerHTML = '';
+            document.getElementById('saveAssessmentBtn').style.display = 'none';
+        }
+
+        // تحميل خيارات التقرير
+        function loadReportOptions() {
+            const select = document.getElementById('reportStudent');
+            select.innerHTML = '<option value="">اختر طالب</option>';
+            
+            students.forEach(student => {
+                const option = document.createElement('option');
+                option.value = student.id;
+                option.textContent = student.name;
+                select.appendChild(option);
+            });
+        }
+
+        // إنشاء التقرير
+        function generateReport() {
+            const studentId = parseInt(document.getElementById('reportStudent').value);
+            const container = document.getElementById('studentReport');
+            
+            if (!studentId) {
+                container.innerHTML = '';
+                document.getElementById('exportBtn').style.display = 'none';
+                return;
+            }
+            
+            const student = students.find(s => s.id === studentId);
+            const studentAssessments = assessments.filter(a => a.studentId === studentId);
+            
+            container.innerHTML = `
                 <div class="card">
-                    <h4>📚 ${subjectName}</h4>
-                    ${groupedSkills[subjectName].map(skill => `
+                    <h3>📊 تقرير الطالب: ${student.name}</h3>
+                    <p><strong>الرقم الطلابي:</strong> ${student.studentId}</p>
+                    <p><strong>الصف:</strong> ${student.grade}</p>
+                    <p><strong>تاريخ التقرير:</strong> ${new Date().toLocaleDateString('ar-SA')}</p>
+                </div>
+            `;
+            
+            studentAssessments.forEach(assessment => {
+                const subject = subjects.find(s => s.id === assessment.subjectId);
+                const reportCard = document.createElement('div');
+                reportCard.className = 'card';
+                
+                let skillsHTML = '';
+                let totalScore = 0;
+                let maxTotal = 0;
+                
+                subject.skills.forEach(skill => {
+                    const score = assessment.scores[skill.id] || 0;
+                    totalScore += score;
+                    maxTotal += skill.maxScore;
+                    
+                    const percentage = (score / skill.maxScore * 100).toFixed(1);
+                    skillsHTML += `
                         <div class="skill-item">
-                            <div>
-                                <strong>🎯 ${skill.name}</strong>
-                                <p style="margin: 5px 0; color: #6c757d;">${skill.description || 'لا يوجد وصف'}</p>
-                                <small>الدرجة العظمى: ${skill.maxGrade}</small>
-                            </div>
-                            <button class="btn btn-danger" onclick="deleteSkill(${skill.id})">حذف</button>
+                            <span>${skill.name}</span>
+                            <span>${score}/${skill.maxScore} (${percentage}%)</span>
                         </div>
-                    `
+                    `;
+                });
+                
+                const overallPercentage = (totalScore / maxTotal * 100).toFixed(1);
+                
+                reportCard.innerHTML = `
+                    <h4>📚 ${subject.name}</h4>
+                    <p><strong>النتيجة الإجمالية:</strong> ${totalScore}/${maxTotal} (${overallPercentage}%)</p>
+                    <div class="chart-container">
+                        <canvas id="chart_${assessment.subjectId}"></canvas>
+                    </div>
+                    <div class="skills-breakdown">
+                        <h5>تفصيل المهارات:</h5>
+                        ${skillsHTML}
+                    </div>
+                `;
+                
+                container.appendChild(reportCard);
+                
+                // إنشاء الرسم البياني
+                setTimeout(() => {
+                    createChart(assessment.subjectId, subject, assessment.scores);
+                }, 100);
+            });
+            
+            document.getElementById('exportBtn').style.display = 'block';
+        }
+
+        // إنشاء الرسم البياني
+        function createChart(subjectId, subject, scores) {
+            const ctx = document.getElementById(`chart_${subjectId}`).getContext('2d');
+            
+            const labels = subject.skills.map(skill => skill.name);
+            const data = subject.skills.map(skill => scores[skill.id] || 0);
+            const maxScores = subject.skills.map(skill => skill.maxScore);
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'الدرجة المحققة',
+                        data: data,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'الدرجة الكاملة',
+                        data: maxScores,
+                        backgroundColor: 'rgba(220, 220, 220, 0.8)',
+                        borderColor: 'rgba(200, 200, 200, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `أداء الطالب في ${subject.name}`,
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'الدرجات'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'المهارات'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // تصدير إلى PDF
+        function exportToPDF() {
+            const studentId = parseInt(document.getElementById('reportStudent').value);
+            const student = students.find(s => s.id === studentId);
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // إعداد المحتوى
+            let yPosition = 30;
+            
+            // عنوان التقرير
+            doc.setFontSize(20);
+            doc.text('Student Assessment Report', 105, yPosition, { align: 'center' });
+            yPosition += 20;
+            
+            // معلومات الطالب
+            doc.setFontSize(14);
+            doc.text(`Student Name: ${student.name}`, 20, yPosition);
+            yPosition += 10;
+            doc.text(`Student ID: ${student.studentId}`, 20, yPosition);
+            yPosition += 10;
+            doc.text(`Grade: ${student.grade}`, 20, yPosition);
+            yPosition += 10;
+            doc.text(`Report Date: ${new Date().toLocaleDateString()}`, 20, yPosition);
+            yPosition += 20;
+            
+            // تفاصيل التقييم
+            const studentAssessments = assessments.filter(a => a.studentId === studentId);
+            
+            studentAssessments.forEach(assessment => {
+                const subject = subjects.find(s => s.id === assessment.subjectId);
+                
+                doc.setFontSize(16);
+                doc.text(`Subject: ${subject.name}`, 20, yPosition);
+                yPosition += 15;
+                
+                let totalScore = 0;
+                let maxTotal = 0;
+                
+                subject.skills.forEach(skill => {
+                    const score = assessment.scores[skill.id] || 0;
+                    totalScore += score;
+                    maxTotal += skill.maxScore;
+                    
+                    const percentage = (score / skill.maxScore * 100).toFixed(1);
+                    doc.setFontSize(12);
+                    doc.text(`${skill.name}: ${score}/${skill.maxScore} (${percentage}%)`, 30, yPosition);
+                    yPosition += 8;
+                });
+                
+                const overallPercentage = (totalScore / maxTotal * 100).toFixed(1);
+                doc.setFontSize(14);
+                doc.text(`Overall Score: ${totalScore}/${maxTotal} (${overallPercentage}%)`, 20, yPosition);
+                yPosition += 20;
+                
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+            });
+            
+            // حفظ الملف
+            doc.save(`${student.name}_Assessment_Report.pdf`);
+            showSuccessMessage('تم تصدير التقرير بنجاح!');
+        }
+
+        // حذف المادة
+        function deleteSubject(subjectId) {
+            if (confirm('هل أنت متأكد من حذف هذه المادة؟')) {
+                subjects = subjects.filter(s => s.id !== subjectId);
+                assessments = assessments.filter(a => a.subjectId !== subjectId);
+                saveData();
+                displaySubjects();
+                showSuccessMessage('تم حذف المادة بنجاح!');
+            }
+        }
+
+        // حذف المهارة
+        function deleteSkill(skillId) {
+            if (confirm('هل أنت متأكد من حذف هذه المهارة؟')) {
+                const subject = subjects.find(s => s.id === currentSubjectId);
+                subject.skills = subject.skills.filter(skill => skill.id !== skillId);
+                
+                // حذف درجات هذه المهارة من جميع التقييمات
+                assessments.forEach(assessment => {
+                    if (assessment.subjectId === currentSubjectId) {
+                        delete assessment.scores[skillId];
+                    }
+                });
+                
+                saveData();
+                displaySkills();
+                showSuccessMessage('تم حذف المهارة بنجاح!');
+            }
+        }
+
+        // حذف الطالب
+        function deleteStudent(studentId) {
+            if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
+                students = students.filter(s => s.id !== studentId);
+                assessments = assessments.filter(a => a.studentId !== studentId);
+                saveData();
+                displayStudents();
+                showSuccessMessage('تم حذف الطالب بنجاح!');
+            }
+        }
+
+        // عرض رسالة نجاح
+        function showSuccessMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'success-message';
+            messageDiv.textContent = message;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
+        }
+
+        // تحميل البيانات عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            displaySubjects();
+            displayStudents();
+        });
+
+        // حفظ البيانات عند إغلاق الصفحة
+        window.addEventListener('beforeunload', function() {
+            saveData();
+        });
+    </script>
+</body>
+</html>
